@@ -1,0 +1,25 @@
+---
+title: "p8105_hw3_sc4935"
+author: "Shiwei Chen"
+date: "10/13/2021"
+output: github_document
+---
+
+```{r, echo=FALSE, message=FALSE}
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(ggridges)
+```
+
+
+# Problem 1
+
+Load dataset of instacart.
+
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+How many aisles are there, and which aisles are the most items ordered from?
