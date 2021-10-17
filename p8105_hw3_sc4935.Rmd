@@ -125,7 +125,7 @@ organize responses as a factor taking levels ordered from “Poor” to “Excel
 brfss_cleaned_df = brfss_smart2010 %>% 
   janitor::clean_names() %>% 
   select(-locationabbr) %>% 
-  separate(locationdesc, into = c("state", "place"), sep = "-") %>% 
+  separate(locationdesc, into = c("state", "place"), sep = " - ") %>% 
   filter(topic == "Overall Health") %>% 
   filter(response == "Excellent" | response == "Very good" | response == "Good" | response == "Fair" | response == "Poor") %>%
   mutate(response = factor(response, levels = c("Poor", "Fair", "Good", "Very good", "Excellent"))) %>% 
@@ -181,7 +181,7 @@ Make a two-panel plot showing, for the years 2006, and 2010, distribution of dat
 
 ```{r}
 two_panel_plot = brfss_cleaned_df %>% 
-  filter(state == "NY ") %>% 
+  filter(state == "NY") %>% 
   filter(year == 2006 | year == 2010) %>% 
   select(year, state, place, response, data_value) %>% 
   view()
@@ -192,4 +192,22 @@ ggplot(two_panel_plot, aes(x = data_value, y = response, color = place)) +
   geom_point(alpha = 1) +
   geom_smooth(se = FALSE) + 
   facet_grid(. ~ year)
+```
+
+
+
+
+
+
+# Problem 3
+
+Load dataset of accel_data.
+
+Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
+
+```{r}
+accel_df = read_csv("./data/accel_data.csv")
+  
+
+
 ```
