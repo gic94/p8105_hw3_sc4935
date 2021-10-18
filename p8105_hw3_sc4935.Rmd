@@ -191,7 +191,13 @@ two_panel_plot
 ggplot(two_panel_plot, aes(x = data_value, y = response, color = place)) + 
   geom_point(alpha = 1) +
   geom_smooth(se = FALSE) + 
-  facet_grid(. ~ year)
+  facet_grid(. ~ year) +
+  labs(
+    title = "Distribution of data_value for responses among locations in NY for 2006 and 2010",
+    x = "Data_value",
+    y = "Responses",
+    caption = "Data from brfss_smart2010 of the p8105.datasets package"
+  ) 
 ```
 
 
@@ -206,8 +212,50 @@ Load dataset of accel_data.
 Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
 
 ```{r}
-accel_df = read_csv("./data/accel_data.csv")
+accel_df = read_csv("./data/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  select(-day_id) %>% 
+  mutate(day = factor(day, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",  "Sunday"))) %>% 
+  arrange(week, day) %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "counts", 
+    values_to = "activity") %>% 
+  mutate(weekday_vs_weekend = if_else(day == "Saturday" | day == "Sunday", "weekend", "weekday")) %>%
+  separate(counts, into = c("remove", "minutes"), sep = "_") %>% 
+  select(-remove) %>% 
+  mutate(week = as.character(week)) %>% 
+  mutate(minutes = as.numeric(minutes)) %>% 
+  view()
   
+accel_df  
+```
 
+Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+
+```{r}
+accel_df %>% 
+  group_by(week, day) %>% 
+  summarise(total_activity = sum(activity)) %>% 
+   pivot_wider(
+  names_from = "day", 
+  values_from = "total_activity") %>% 
+  view() %>% 
+  knitr::kable()
+```
+
+Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+
+```{r}
+accel_df %>% 
+  ggplot(aes(x = minutes, y = activity, color = day)) + 
+  geom_point(alpha = 0.5) +
+  labs(
+    title = "24-hour activity time courses for each day",
+    x = "Minutes of a day",
+    y = "Activity count",
+    caption = "Data from accel_data.csv"
+  ) 
+  
 
 ```
