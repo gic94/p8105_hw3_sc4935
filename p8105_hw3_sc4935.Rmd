@@ -38,7 +38,6 @@ view(instacart_df)
 ```
 
 Comment: 
-
 So, there are 134 kinds of aisles, and by arranging them, the most items ordered from fresh vegetables.
 
 
@@ -60,7 +59,6 @@ instacart_df %>%
 ```
 
 Comment: 
-
 Frist, we limit the aisles with more than 10000 items ordered. Then, I arrange the aisles by the number of items order. We can see the most items are ordered from "fresh vegetables" and "fresh fruits", which over 150000 items are ordered from each of these two aisle.
 
 
@@ -83,7 +81,6 @@ instacart_table1_df
 ```
 
 Comment: 
-
 We make a table showing the three most popular items in the aisles of “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. For “baking ingredients”, the most popular item is Light brown sugar, 499 times, the second is Pure baking soda, 387 times, and the third is Cane sugar, 336 times. For “dog food care”, the most popular item is Snack sticks chicken & Rice recipe dog treats, 30 times, the second is Organix chicken & Brown rice recipe, 28 times, and the third is Small dog biscuits, 26 times. For “packaged vegetables fruits”, the most popular item is Organic baby spinach, 9784 times, the second is Organic raspberries, 5546 times, and the third is Organic blueberries, 4966 times.
 
 
@@ -116,7 +113,7 @@ Write a short description of the dataset, noting the size and structure of the d
 ```{r}
 dim(instacart)
 head(instacart, 3) %>% 
-  view()
+  knitr::kable()
 ```
 
 In the data set of instacart, there are 1384617 rows and 15 columns, which means there are 15 variables in this data set. The original data is quite expensive, and the data linked to at the top of this page for class use is a cleaned and condensed version of it. Each row in the dataset represents a product from an order, and the dataset contains 1,384,617 observations from 131,209 unique users. 
