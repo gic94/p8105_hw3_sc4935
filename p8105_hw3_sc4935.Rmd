@@ -27,25 +27,29 @@ data("instacart")
 How many aisles are there, and which aisles are the most items ordered from?
 
 ```{r}
-instacart_df = count(instacart, aisle) %>% 
-  mutate(aisle_ranking = min_rank(desc(n)))
+instacart_df = count(instacart, aisle) %>%   # count order times of each aisle
+  mutate(aisle_ranking = min_rank(desc(n)))  # add ranking
 instacart_df 
+nrow(instacart_df)                           # count how many aisles
 
-nrow(instacart_df)
 arrange(instacart_df, aisle_ranking) %>% 
-  filter(aisle_ranking == 1)
+  filter(aisle_ranking == 1)                 # find aisle the most items ordered from
 view(instacart_df)
 ```
 
+Comment: 
+
 So, there are 134 kinds of aisles, and by arranging them, the most items ordered from fresh vegetables.
+
 
 
 Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
 
 ```{r}
 instacart_df %>% 
-  filter(n > 10000) %>% 
-  ggplot(aes(x = n, y = aisle)) +
+  mutate(aisle = reorder(aisle, n)) %>%      # rearrange from max to min
+  filter(n > 10000) %>%                      # filter more than 10000 items ordered
+  ggplot(aes(x = n, y = aisle)) +            # make plot
   geom_point() + 
   labs(
     title = "The plot of items in each aisle",
@@ -55,51 +59,71 @@ instacart_df %>%
   )
 ```
 
+Comment: 
+
+Frist, we limit the aisles with more than 10000 items ordered. Then, I arrange the aisles by the number of items order. We can see the most items are ordered from "fresh vegetables" and "fresh fruits", which over 150000 items are ordered from each of these two aisle.
+
+
+
 Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
 
 ```{r}
 instacart_table1_df = instacart %>% 
   select(aisle, product_name) %>% 
-  filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") %>% 
-  group_by(aisle, product_name) %>% 
-  summarize(order_times = n()) %>% 
-  mutate(product_rank = min_rank(desc(order_times))) %>% 
-  filter(product_rank == 1) %>% 
-  select(-product_rank) %>% 
-  pivot_wider(
-  names_from = "product_name", 
-  values_from = "order_times") %>% 
+  filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") %>%           
+  group_by(aisle, product_name) %>%          # group aisles and product_name
+  summarize(order_times = n()) %>%           # then find order times
+  arrange(desc(order_times)) %>%             # arrange order times from max to min
+  mutate(product_rank = min_rank(desc(order_times))) %>%     # add ranking
+  filter(product_rank < 4) %>%               # find 3 most popular items
   view()
 
-knitr::kable(instacart_table1_df)
+knitr::kable(instacart_table1_df)            # make table
 instacart_table1_df 
 ```
+
+Comment: 
+
+We make a table showing the three most popular items in the aisles of “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. For “baking ingredients”, the most popular item is Light brown sugar, 499 times, the second is Pure baking soda, 387 times, and the third is Cane sugar, 336 times. For “dog food care”, the most popular item is Snack sticks chicken & Rice recipe dog treats, 30 times, the second is Organix chicken & Brown rice recipe, 28 times, and the third is Small dog biscuits, 26 times. For “packaged vegetables fruits”, the most popular item is Organic baby spinach, 9784 times, the second is Organic raspberries, 5546 times, and the third is Organic blueberries, 4966 times.
+
+
 
 Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
 
 ```{r}
 instacart_table2_df = instacart %>% 
-  select(order_dow, order_hour_of_day, product_name) %>% 
-  filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>% 
-  group_by(order_dow, product_name) %>% 
-  summarise(mean_hours = mean(order_hour_of_day)) %>% 
-  mutate(order_dow = recode(order_dow, "0" = "Sunday", "1" = "Monday", "2" = "Tuesday", "3" = "Wednesday", "4" = "Thursday", "5" = "Friday", "6" = "Saturday")) %>% 
+  select(order_dow, order_hour_of_day, product_name) %>%   
+  filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>%
+  group_by(order_dow, product_name) %>%                    #group by day and product
+  summarise(mean_hours = mean(order_hour_of_day)) %>%          # count mean of hours 
+  mutate(order_dow = recode(order_dow, "0" = "Sunday", "1" = "Monday", "2" = "Tuesday", "3" = "Wednesday", "4" = "Thursday", "5" = "Friday", "6" = "Saturday")) %>%         # change name of day from numeric to character
   pivot_wider(
   names_from = "order_dow", 
-  values_from = "mean_hours") %>% 
+  values_from = "mean_hours") %>%                                       # make table
   view()
 
 knitr::kable(instacart_table2_df)
 instacart_table2_df
 ```
 
+Comment: 
+Overall, the mean order hour of a day to the Coffee ice cream is higher than the Pink lady apples. The Coffee ice cream is ordered more on weekdays than weekend, and the Pink lady apple is ordered more on weekend than weekdays.
+
+
+
 Write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations.
 
+```{r}
+dim(instacart)
+head(instacart, 3) %>% 
+  view()
+```
 
+In the data set of instacart, there are 1384617 rows and 15 columns, which means there are 15 variables in this data set. The original data is quite expensive, and the data linked to at the top of this page for class use is a cleaned and condensed version of it. Each row in the dataset represents a product from an order, and the dataset contains 1,384,617 observations from 131,209 unique users. 
 
+From 15 variables, there are some key variables, "order_dow" shows the day of the week on which the order was placed, and "order_hour_of_day" the hour of the day on which the order was placed. "product_name" and "aisle" are two important variables. We count the times that product_name appear in each aisle. One more key variable is "reordered", we can see if this prodcut has been ordered by this user in the past.
 
-
-
+We can give some illstrative examples. From first row, product 'Bulgarian Yogurt' from aisle 'yogurt' it places on thursday at 10hr, and it is reordered. From second row, product 'Organic 4% Milk Fat Whole Milk Cottage Cheese' from aisle 'other creams cheeses' it places on thursday at 10hr, and it is reordered. From third row, product 'Organic Celery Hearts' from aisle 'fresh vegetables' it places on thursday at 10hr, and it is not reordered.
 
 
 
@@ -122,39 +146,53 @@ include only responses from “Excellent” to “Poor”.
 organize responses as a factor taking levels ordered from “Poor” to “Excellent”.
 
 ```{r}
-brfss_cleaned_df = brfss_smart2010 %>% 
+brfss_cleaned_df = brfss_smart2010 %>%                # tidy data
   janitor::clean_names() %>% 
   select(-locationabbr) %>% 
   separate(locationdesc, into = c("state", "place"), sep = " - ") %>% 
   filter(topic == "Overall Health") %>% 
   filter(response == "Excellent" | response == "Very good" | response == "Good" | response == "Fair" | response == "Poor") %>%
   mutate(response = factor(response, levels = c("Poor", "Fair", "Good", "Very good", "Excellent"))) %>% 
-  view()
+  view()                                # levels ordered from “Poor” to “Excellent”  
 
 brfss_cleaned_df  
 ```
+
+We finished data clean.
+
+
 
 In 2002, which states were observed at 7 or more locations? 
 
 ```{r}
 brfss_2002 = filter(brfss_cleaned_df, year == 2002) %>% 
   group_by(state) %>% 
-  summarize(observed = n_distinct(place)) %>% 
+  summarize(observed = n_distinct(place)) %>%                      # avoid repeat
   filter(observed >= 7) %>% 
   view()
 brfss_2002
 ```
+
+Comment:
+In 2002, there are 6 states were observed at 7 or more locations, they are CT, FL, MA, NC, NJ, PA.
+
+
 
 What about in 2010?
 
 ```{r}
 brfss_2010 = filter(brfss_cleaned_df, year == 2010) %>% 
   group_by(state) %>% 
-  summarize(observed = n_distinct(place)) %>% 
+  summarize(observed = n_distinct(place)) %>%                      # avoid repeat
   filter(observed >= 7) %>% 
   view()
 brfss_2010
 ```
+
+Comment:
+In 2010, there are 14 states were observed at 7 or more locations, they are CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, WA.
+
+
 
 Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. 
 Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
@@ -163,10 +201,10 @@ Make a “spaghetti” plot of this average value over time within a state (that
 excellent_df = filter(brfss_cleaned_df, response == "Excellent") %>% 
   select(year, state, place, data_value) %>% 
   group_by(year, state) %>% 
-  summarise(mean_dv = mean(data_value)) %>% 
+  summarise(mean_dv = mean(data_value)) %>%        # calculate mean of data_value
   view()
 
-excellent_df
+excellent_df                                     
 ggplot(excellent_df, aes(x = year, y = mean_dv, color = state)) +
   geom_point(alpha = 0.5) + geom_line(alpha = 0.5) + 
   labs(
@@ -177,20 +215,24 @@ ggplot(excellent_df, aes(x = year, y = mean_dv, color = state)) +
   ) 
 ```
 
+Comment:
+First we limit the places of the states with only "Excellent" responses, and calculate the average of the data value. The “spaghetti” plot shows the average value over time within each state.
+
+
+
 Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
 
 ```{r}
-two_panel_plot = brfss_cleaned_df %>% 
+two_panel_plot = brfss_cleaned_df %>%                     # make two panel graph
   filter(state == "NY") %>% 
   filter(year == 2006 | year == 2010) %>% 
   select(year, state, place, response, data_value) %>% 
   view()
 
-two_panel_plot
+two_panel_plot    
 
 ggplot(two_panel_plot, aes(x = data_value, y = response, color = place)) + 
   geom_point(alpha = 1) +
-  geom_smooth(se = FALSE) + 
   facet_grid(. ~ year) +
   labs(
     title = "Distribution of data_value for responses among locations in NY for 2006 and 2010",
@@ -200,6 +242,20 @@ ggplot(two_panel_plot, aes(x = data_value, y = response, color = place)) +
   ) 
 ```
 
+```{r}
+ggplot(two_panel_plot, aes(x = data_value, fill = response)) + 
+  geom_density(alpha = 0.5) +
+  facet_grid(. ~ year) +
+  labs(
+    title = "Distribution of data_value for responses among locations in NY for 2006 and 2010",
+    x = "Data_value",
+    y = "Responses",
+    caption = "Data from brfss_smart2010 of the p8105.datasets package"
+  ) 
+```
+
+Comment:
+The plot graph cannot complete explain the distribution of data value, so I make a density graph. After making two panel plot, we can compare the data value among the locations in New York between 2006 and 2010. For 2006, bronx county and erie county did not appear on the plot graoh. For the density distribution, 2006 might has better response than 2010.
 
 
 
@@ -212,7 +268,7 @@ Load dataset of accel_data.
 Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
 
 ```{r}
-accel_df = read_csv("./data/accel_data.csv") %>% 
+accel_df = read_csv("./data/accel_data.csv") %>%                      # tidy data
   janitor::clean_names() %>% 
   select(-day_id) %>% 
   mutate(day = factor(day, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",  "Sunday"))) %>% 
@@ -220,8 +276,8 @@ accel_df = read_csv("./data/accel_data.csv") %>%
   pivot_longer(
     activity_1:activity_1440,
     names_to = "counts", 
-    values_to = "activity") %>% 
-  mutate(weekday_vs_weekend = if_else(day == "Saturday" | day == "Sunday", "weekend", "weekday")) %>%
+    values_to = "activity") %>%      
+  mutate(weekday_vs_weekend = if_else(day == "Saturday" | day == "Sunday", "weekend", "weekday")) %>%                          # create weekday_vs_weekend to sort days   
   separate(counts, into = c("remove", "minutes"), sep = "_") %>% 
   select(-remove) %>% 
   mutate(week = as.character(week)) %>% 
@@ -231,31 +287,51 @@ accel_df = read_csv("./data/accel_data.csv") %>%
 accel_df  
 ```
 
+```{r}
+dim(accel_df)
+```
+
+Comment:
+After doing the data cleaning, my resulting data set has 50400 rows and 5 columns, which means 5 variables left, they are week, day, minutes, activity, and weekday_vs_weekend. I removed the day_id, since it seems not really useful. Then I sorted days by weekday or weekend. And I arrange the table to make it easy to read and changed week to the character variable and the minutes to the numeric variable.
+
+
+
 Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
 
 ```{r}
 accel_df %>% 
   group_by(week, day) %>% 
-  summarise(total_activity = sum(activity)) %>% 
+  summarise(total_activity = sum(activity)) %>%    # calculate the sum of activity
    pivot_wider(
   names_from = "day", 
   values_from = "total_activity") %>% 
   view() %>% 
-  knitr::kable()
+  knitr::kable()                                                      # make table
 ```
+
+Comment:
+According to the table, we can clearly see his activity per day through 5 weeks. We should pay attention at the activities on Saturday of week 4 and 5, they show 1440, which equal to the minutes of a day. I guess that he might not take the machine to monitor his actvity or he did not do the excercise on those two days. For the trends, it seems like his activities remain more stable at weekdays, but on weekend, sometimes his activities are higher the average of weekday, and sometimes are lower.
+
+
 
 Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
 
 ```{r}
 accel_df %>% 
-  ggplot(aes(x = minutes, y = activity, color = day)) + 
-  geom_point(alpha = 0.5) +
+  mutate(hour = minutes/60) %>%                            # change minutes to hours and graph
+  ggplot(aes(x = hour, y = activity, color = day)) + 
+  geom_smooth(se = FALSE) +
   labs(
     title = "24-hour activity time courses for each day",
-    x = "Minutes of a day",
+    x = "Hours of a day",
     y = "Activity count",
     caption = "Data from accel_data.csv"
-  ) 
-  
-
+  ) +
+  scale_x_continuous(
+    breaks = c(0, 4, 8, 12, 16, 20, 24), 
+    labels = c(0, 4, 8, 12, 16, 20, 24)
+  )
 ```
+
+Comment:
+Overall, except sunday and friday, other days remain in the similar level of the activity count. The activity count most from 8 to 20. Sunday and friday are two peaks in the graph. For sunday, the most activity count appear within 10 to 12. For friday, the most activity count appear within 20 to 22.
